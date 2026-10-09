@@ -31,7 +31,7 @@ export function Header() {
           </span>
           {demoMode ? (
             <Pill tone="brand" className="hidden md:inline-flex">
-              DEMO
+              内测版
             </Pill>
           ) : null}
         </Link>
