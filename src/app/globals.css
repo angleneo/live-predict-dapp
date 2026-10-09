@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg text-slate-200 antialiased;
+  background-image:
+    radial-gradient(60rem 40rem at 12% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(50rem 30rem at 90% 0%, rgba(14, 203, 129, 0.1), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* 只让需要滚动的容器滚动，避免整页重排 */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3145 transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: #2a3145;
+  border-radius: 999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-line bg-bg-card/80 backdrop-blur-sm;
+  }
+  .card-title {
+    @apply flex items-center justify-between gap-2 border-b border-line px-4 py-3 text-sm font-medium text-slate-300;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand text-white hover:bg-brand-soft active:bg-brand-deep;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-bg-soft text-slate-300 hover:bg-bg-hover;
+  }
+  .btn-bull {
+    @apply btn bg-bull/15 text-bull ring-1 ring-inset ring-bull/40 hover:bg-bull/25;
+  }
+  .btn-bear {
+    @apply btn bg-bear/15 text-bear ring-1 ring-inset ring-bear/40 hover:bg-bear/25;
+  }
+  .input {
+    @apply w-full rounded-lg border border-line bg-bg-soft px-3 py-2 text-sm text-slate-100
+      outline-none placeholder:text-muted focus:border-brand/70;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md border border-line bg-bg-soft px-2 py-0.5 text-xs text-muted;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
+}
+
+/* ECharts tooltip 暗色适配 */
+.echarts-tooltip,
+div[class*='echarts-tooltip'] {
+  color: #e2e8f0;
+}

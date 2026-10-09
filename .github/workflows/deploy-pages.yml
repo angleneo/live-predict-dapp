@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+# 推送到 main 后自动构建静态产物并发布到 GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: node scripts/build-pages.mjs
+        env:
+          NEXT_PUBLIC_CHAIN_ID: '11155111'
+          NEXT_PUBLIC_RPC_URL: 'https://ethereum-sepolia-rpc.publicnode.com'
+          # 想启用 WalletConnect 扫码登录，在仓库 Settings → Secrets 里加这个 secret
+          # NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.WALLETCONNECT_PROJECT_ID }}
+          # 想连真实合约，填入已部署地址（非零地址即自动切换为链上读写）
+          # NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS: ${{ vars.PREDICTION_MARKET_ADDRESS }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
