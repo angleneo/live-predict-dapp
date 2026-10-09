@@ -4,6 +4,12 @@
 
 **技术栈：** Next.js 14 (App Router) · React 18 · TypeScript · wagmi v2 / viem · ethers.js v6 · WalletConnect · TanStack Query v5 · Zustand v4 · WebSocket · Tailwind CSS 3 · ECharts 5 · 虚拟列表 (@tanstack/react-virtual)
 
+|  |  |
+| --- | --- |
+| 🌐 在线演示 | https://angleneo.github.io/live-predict-dapp/ |
+| 📦 仓库 | https://github.com/angleneo/live-predict-dapp |
+| 🚀 部署 | GitHub Pages（静态导出，推送 main 自动发布，见 `.github/workflows/deploy-pages.yml`） |
+
 ---
 
 ## 1. 快速开始
@@ -189,7 +195,47 @@ reviewing → awaiting_signature → pending → confirming → success
 
 ---
 
-## 7. 已知取舍
+## 7. 部署（GitHub Pages）
+
+线上地址：**https://angleneo.github.io/live-predict-dapp/**
+
+```
+push main ──▶ GitHub Actions ──┬─ npm ci
+                               ├─ node scripts/build-pages.mjs   # output:'export' + basePath
+                               ├─ actions/configure-pages
+                               ├─ actions/upload-pages-artifact  (out/)
+                               └─ actions/deploy-pages ──▶ GitHub Pages
+```
+
+关键点：
+
+- 项目站点部署在 `https://<user>.github.io/<repo>/` 子路径下，因此构建时通过 `basePath` 前缀化所有资源与站内链接；
+  `scripts/build-pages.mjs` 会自动从 `GITHUB_REPOSITORY` 推导仓库名作为 `basePath`（仓库名形如 `<user>.github.io` 时留空）。
+- 静态导出要求 `trailingSlash: true`（生成 `/live/l-1/index.html`），并用 `.nojekyll` 避免 `_next` 目录被 Jekyll 忽略。
+- 动态路由 `/live/[id]` 由服务端组件导出 `generateStaticParams()` 预渲染 4 个直播间；交互逻辑在客户端组件 `LiveRoom` 中。
+- 首次部署需在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**（本仓库已通过 API 配置好）。
+
+本地验证静态导出：
+
+```bash
+npm run build:pages     # 产物输出到 out/
+# 自定义子路径：NEXT_PUBLIC_BASE_PATH=/my-path npm run build:pages
+```
+
+改仓库名时无需改代码：`basePath` 由 CI 自动推导，重命名仓库后重新运行工作流即可。
+
+在 CI 中注入运行时配置（可选，编辑工作流里的 env）：
+
+| 变量 | 用途 |
+| --- | --- |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | 启用 WalletConnect 扫码连接（建议放在仓库 Secrets） |
+| `NEXT_PUBLIC_PREDICTION_MARKET_ADDRESS` | 填入已部署合约地址，线上即切换为链上真实读写 |
+
+> 默认部署为 Demo 模式：使用内置 Mock 实时源，交易走本地模拟生命周期，无需任何后端或合约即可完整演示。
+
+---
+
+## 8. 已知取舍
 
 - 交易报价用前端 AMM 近似模型（`lib/trade/math.ts`）估算均价、价格影响、手续费与滑点边界，**真实成交价以合约 `quoteBuy / quoteSell` 为准**；
 - 列表数据（弹幕/成交）使用可变环形缓冲 + 版本号，属于"数据在 React 之外"的刻意设计，需要遵守"只用频道版本号驱动渲染"的约定；

@@ -4,6 +4,7 @@ out
 build
 dist
 build.log
+.tools
 .env
 .env.local
 .env*.local
