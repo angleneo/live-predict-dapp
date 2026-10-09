@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build static export
-        run: node scripts/build-pages.mjs
+        run: npm run build:pages
         env:
           NEXT_PUBLIC_CHAIN_ID: '11155111'
           NEXT_PUBLIC_RPC_URL: 'https://ethereum-sepolia-rpc.publicnode.com'

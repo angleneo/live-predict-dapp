@@ -8,6 +8,9 @@
  * 自定义：NEXT_PUBLIC_BASE_PATH=/my-sub-path npm run build:pages
  */
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 const repoName = (process.env.GITHUB_REPOSITORY || '').split('/')[1] || '';
 
@@ -25,5 +28,26 @@ const env = {
 
 console.log(`[build:pages] output=export basePath="${basePath || '(根路径)'}"`);
 
-const result = spawnSync('next', ['build'], { stdio: 'inherit', env, shell: true });
+/**
+ * 解析本地安装的 next 可执行入口。
+ * CI 里以 `node scripts/build-pages.mjs` 直接调用脚本，PATH 不含 node_modules/.bin，
+ * 靠 shell 找 `next` 会报 `next: not found`（exit 127），因此显式解析。
+ */
+function resolveNextBin() {
+  try {
+    const require = createRequire(import.meta.url);
+    const pkgPath = require.resolve('next/package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    const binRelative = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.next;
+    return binRelative ? join(dirname(pkgPath), binRelative) : null;
+  } catch {
+    return null;
+  }
+}
+
+const nextBin = resolveNextBin();
+const result = nextBin
+  ? spawnSync(process.execPath, [nextBin, 'build'], { stdio: 'inherit', env })
+  : spawnSync('next', ['build'], { stdio: 'inherit', env, shell: true });
+
 process.exit(result.status ?? 1);
